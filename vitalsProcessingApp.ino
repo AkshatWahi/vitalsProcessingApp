@@ -34,6 +34,8 @@ String[] srl;
 int prev_state = 0, current_state = 1,droplist_no=0;
 String instring, save_data;
 char inbyte;
+boolean save_gsr = false;
+long current_time, collection_time = 10000;
 PFont font1,font2;
 PrintWriter output_file;
 
@@ -57,7 +59,19 @@ void draw()
   textFont(font1);
   fill(255);
   text(log_str,10,height-10);
-  text("patient ID - " + patient_id , 700,height-10);
+  text("Patient ID:- " + patient_id , 800,height-10);
+  if(save_gsr)
+  {
+    if((long)(millis()-current_time) >= collection_time)
+    {
+      save_gsr = false;
+      mychart_skin.hide();
+      current_state = 7;
+      log_str = str(collection_time/1000) + " seconds data saved. Read Blood Oxygen Saturation";
+      output_file.flush();
+      output_file.close();
+    }
+  }
   switch(current_state)
   {
     case 1:
@@ -137,6 +151,11 @@ void draw()
               log_str = "Skin Conductance = " + str(indata[0])+" Resistance = " + str(indata[1])+ " Voltage = "+str(indata[2]);
               
               save_data = instring;
+              if(save_gsr)
+              {
+                log_str += "  saving...";
+                output_file.println(save_data);
+              }
              // save_data += ",";
              
               }
@@ -279,7 +298,7 @@ public void Read_temp(int val)
 
 public void Save()
 {
-  output_file.print(save_data);
+  output_file.println(save_data);
   switch(current_state)
   {
     case 4:
@@ -288,19 +307,26 @@ public void Save()
           log_str = save_data + " saved. Read Skin Conductance";
           output_file.flush();
           output_file.close();
+          cp5.getController("Save").hide();
+          myport.write('d');
     break;
 
     case 6:
+          current_time = millis();
+          save_gsr = true;
+          cp5.getController("Save").hide();
+          log_str = save_data + " saving...";
+          /*
           mychart_skin.hide();
           current_state = 7;
           log_str = save_data + " saved. Read Blood Oxygen Saturation";
           output_file.flush();
           output_file.close();
+          */
     break;
   }
   
-  cp5.getController("Save").hide();
-  myport.write('d');
+  
   
   
   //output_file.flush();
@@ -376,7 +402,7 @@ public void initiate_allcontrols()
      .setPosition(450,250)
      .setSize(150,50)
      .setBroadcast(true)
-     .getCaptionLabel().setText("Read Tempearture").setFont(font1).align(CENTER,CENTER)
+     .getCaptionLabel().setText("Read Temperature").setFont(font1).align(CENTER,CENTER)
      ;
   
   cp5.getController("Read_temp").hide();
@@ -421,7 +447,7 @@ public void initiate_allcontrols()
      .setPosition(450,250)
      .setSize(150,50)
      .setBroadcast(true)
-     .getCaptionLabel().setText("Read Skin Conductance").setFont(font1).align(CENTER,CENTER)
+     .getCaptionLabel().setText("Read GSR").setFont(font1).align(CENTER,CENTER)
      ;
   
   cp5.getController("Read_Skin").hide();
