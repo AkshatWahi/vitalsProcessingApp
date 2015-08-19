@@ -44,6 +44,8 @@ void setup()
   font1 = createFont("arial",13);
   font2 = createFont("arial",20);
   font3 = createFont("arial",23);
+  srl = Serial.list();
+  initiate_allcontrols();
 }
 
 void draw()
@@ -177,7 +179,10 @@ void draw()
 
 void state1_controls()
 {
-  srl = Serial.list();
+  
+  cp5.getController("dropdown").show();
+  cp5.getController("Connect").show();
+  /*
   cp5.addScrollableList("dropdown")
      .setBroadcast(false)
      .setPosition(400,40)
@@ -195,11 +200,14 @@ void state1_controls()
      .setBroadcast(true)
      .getCaptionLabel().setFont(font1).align(CENTER,CENTER)
      ;
-
+  */
 }
 
 void state2_controls()
 {
+  cp5.getController("Input_Filename").show();
+  cp5.getController("Create").show();
+  /*
   cp5.addTextfield("Input_Filename")
      .setBroadcast(false)
      .setPosition(80,40)
@@ -219,12 +227,15 @@ void state2_controls()
      .setBroadcast(true)
      .getCaptionLabel().setFont(font1).align(CENTER,CENTER)
      ;
-
+  */
   log_str = "Connected. Enter the file name to begin data collection";      
 }
 
 void state3_controls()
 {
+  cp5.getController("Read_temp").show();
+  cp5.getController("New").show();
+  /*
   cp5.addButton("Read_temp")
      .setBroadcast(false)
      .setPosition(450,250)
@@ -240,10 +251,14 @@ void state3_controls()
      .setBroadcast(true)
      .getCaptionLabel().setFont(font1).align(CENTER,CENTER)
      ;
+  */   
 }
 
 void state4_controls()
 {
+  mychart_temp.show();
+  cp5.getController("Save").show();
+  /*
   mychart_temp = cp5.addChart("Temperature")
                     .setPosition(120,150)
                     .setSize(750,350)
@@ -264,12 +279,15 @@ void state4_controls()
 
   mychart_temp.addDataSet("temp");
   mychart_temp.setData("temp",new float[150]);
+  */
   myport.write('t');
 
 }
 
 void state5_controls()
 {
+  cp5.getController("Read_Skin").show();
+  /*
   cp5.addButton("Read_Skin")
      .setBroadcast(false)
      .setPosition(450,250)
@@ -277,10 +295,14 @@ void state5_controls()
      .setBroadcast(true)
      .getCaptionLabel().setText("Read Skin Conductance").setFont(font1).align(CENTER,CENTER)
      ;
+  */   
 }
 
 void state6_controls()
 {
+  mychart_skin.show();
+  cp5.getController("Save").show();
+  /*
   mychart_skin = cp5.addChart("Skin_Conductance")
                     .setPosition(120,150)
                     .setSize(750,350)
@@ -291,10 +313,11 @@ void state6_controls()
                    // .getCaptionLabel().setFont(font1)
                     ;
 
-  cp5.getController("Save").show();                  
+                    
 
   mychart_skin.addDataSet("skin");
   mychart_skin.setData("skin",new float[150]);
+  */
   myport.write('s');
 }
 
@@ -392,4 +415,123 @@ public void Read_Skin()
 void serialEvent(Serial p)
 {
   instring = p.readString();
+}
+
+public void initiate_allcontrols()
+{
+  cp5.addScrollableList("dropdown")
+     .setBroadcast(false)
+     .setPosition(400,40)
+     .setSize(200,500)
+     .setBarHeight(40)
+     .setItemHeight(30)
+     .addItems(srl)
+     .setBroadcast(true)
+     ;
+
+  cp5.getController("dropdown").hide();   
+
+  cp5.addButton("Connect")
+     .setBroadcast(false)
+     .setPosition(630,40)
+     .setSize(100,40)
+     .setBroadcast(true)
+     .getCaptionLabel().setFont(font1).align(CENTER,CENTER)
+     ;
+  
+  cp5.getController("Connect").hide();
+
+  cp5.addTextfield("Input_Filename")
+     .setBroadcast(false)
+     .setPosition(80,40)
+     .setSize(750,40)
+     .setFont(font2)
+     .setFocus(true)
+     .setColor(color(200,0,0))
+     .setText("")
+     .setAutoClear(false)
+     .setBroadcast(true)
+     ;
+
+  cp5.getController("Input_Filename").hide();   
+
+  cp5.addButton("Create")
+     .setBroadcast(false)
+     .setPosition(860,40)
+     .setSize(100,40)
+     .setBroadcast(true)
+     .getCaptionLabel().setFont(font1).align(CENTER,CENTER)
+     ;
+
+  cp5.getController("Create").hide();   
+
+  cp5.addButton("Read_temp")
+     .setBroadcast(false)
+     .setPosition(450,250)
+     .setSize(150,50)
+     .setBroadcast(true)
+     .getCaptionLabel().setText("Read Tempearture").setFont(font1).align(CENTER,CENTER)
+     ;
+  
+  cp5.getController("Read_temp").hide();
+
+
+  cp5.addButton("New")
+     .setBroadcast(false)
+     .setPosition(860,40)
+     .setSize(100,40)
+     .setBroadcast(true)
+     .getCaptionLabel().setFont(font1).align(CENTER,CENTER)
+     ;
+
+  cp5.getController("New").hide();   
+
+  mychart_temp = cp5.addChart("Temperature")
+                    .setPosition(120,150)
+                    .setSize(750,350)
+                    .setRange(-2,80)
+                    .setView(Chart.LINE)
+                    .setStrokeWeight(1.5)
+                   // .setColorCaptionLabel(color(40))
+                   // .getCaptionLabel().setFont(font1)
+                    ;
+
+  mychart_temp.addDataSet("temp");
+  mychart_temp.setData("temp",new float[150]);
+  mychart_temp.hide();
+
+  cp5.addButton("Save")
+     .setBroadcast(false)
+     .setPosition(900,300)
+     .setSize(100,40)
+     .setBroadcast(true)
+     .getCaptionLabel().setFont(font1).align(CENTER,CENTER)
+     ;
+  
+  cp5.getController("Save").hide(); 
+  
+  cp5.addButton("Read_Skin")
+     .setBroadcast(false)
+     .setPosition(450,250)
+     .setSize(150,50)
+     .setBroadcast(true)
+     .getCaptionLabel().setText("Read Skin Conductance").setFont(font1).align(CENTER,CENTER)
+     ;
+  
+  cp5.getController("Read_Skin").hide();
+
+  mychart_skin = cp5.addChart("Skin_Conductance")
+                    .setPosition(120,150)
+                    .setSize(750,350)
+                    .setRange(-2,15)
+                    .setView(Chart.LINE)
+                    .setStrokeWeight(1.5)
+                   // .setColorCaptionLabel(color(40))
+                   // .getCaptionLabel().setFont(font1)
+                    ;
+  
+  mychart_skin.addDataSet("skin");
+  mychart_skin.setData("skin",new float[150]);
+  mychart_skin.hide();                  
+
 }
