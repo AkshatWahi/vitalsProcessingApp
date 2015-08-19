@@ -21,6 +21,7 @@ Description of various states-
 9- read BP
 10- save BP
 */
+
 import controlP5.*;
 import processing.serial.*;
 import java.util.*;
@@ -28,12 +29,12 @@ import java.util.*;
 Serial myport;
 ControlP5 cp5;
 Chart mychart_temp,mychart_skin;
-String log_str="Select COM port ...",file_path="D:/Kumbh_data/",concat_path="";
+String log_str="Select COM port ...",file_path="D:/Kumbh_data/",concat_path="", patient_id = "";
 String[] srl;
 int prev_state = 0, current_state = 1,droplist_no=0;
 String instring, save_data;
 char inbyte;
-PFont font1,font2,font3;
+PFont font1,font2;
 PrintWriter output_file;
 
 void setup()
@@ -43,7 +44,7 @@ void setup()
   cp5 = new ControlP5(this);
   font1 = createFont("arial",13);
   font2 = createFont("arial",20);
-  font3 = createFont("arial",23);
+  
   srl = Serial.list();
   initiate_allcontrols();
 }
@@ -56,6 +57,7 @@ void draw()
   textFont(font1);
   fill(255);
   text(log_str,10,height-10);
+  text("patient ID - " + patient_id , 700,height-10);
   switch(current_state)
   {
     case 1:
@@ -99,7 +101,7 @@ void draw()
               log_str = "Temperature = " + instring;
               
               save_data = instring;
-              save_data += ",";
+             // save_data += ",";
               }
               instring = "";
               
@@ -135,7 +137,7 @@ void draw()
               log_str = "Skin Conductance = " + str(indata[0])+" Resistance = " + str(indata[1])+ " Voltage = "+str(indata[2]);
               
               save_data = instring;
-              save_data += ",";
+             // save_data += ",";
              
               }
               instring = "";
@@ -179,145 +181,43 @@ void draw()
 
 void state1_controls()
 {
-  
   cp5.getController("dropdown").show();
   cp5.getController("Connect").show();
-  /*
-  cp5.addScrollableList("dropdown")
-     .setBroadcast(false)
-     .setPosition(400,40)
-     .setSize(200,500)
-     .setBarHeight(40)
-     .setItemHeight(30)
-     .addItems(srl)
-     .setBroadcast(true)
-     ;
-
-  cp5.addButton("Connect")
-     .setBroadcast(false)
-     .setPosition(630,40)
-     .setSize(100,40)
-     .setBroadcast(true)
-     .getCaptionLabel().setFont(font1).align(CENTER,CENTER)
-     ;
-  */
 }
 
 void state2_controls()
 {
   cp5.getController("Input_Filename").show();
   cp5.getController("Create").show();
-  /*
-  cp5.addTextfield("Input_Filename")
-     .setBroadcast(false)
-     .setPosition(80,40)
-     .setSize(750,40)
-     .setFont(font2)
-     .setFocus(true)
-     .setColor(color(200,0,0))
-     .setText("")
-     .setAutoClear(false)
-     .setBroadcast(true)
-     ;
-
-  cp5.addButton("Create")
-     .setBroadcast(false)
-     .setPosition(860,40)
-     .setSize(100,40)
-     .setBroadcast(true)
-     .getCaptionLabel().setFont(font1).align(CENTER,CENTER)
-     ;
-  */
+  
   log_str = "Connected. Enter the file name to begin data collection";      
 }
 
 void state3_controls()
 {
   cp5.getController("Read_temp").show();
-  cp5.getController("New").show();
-  /*
-  cp5.addButton("Read_temp")
-     .setBroadcast(false)
-     .setPosition(450,250)
-     .setSize(150,50)
-     .setBroadcast(true)
-     .getCaptionLabel().setText("Read Tempearture").setFont(font1).align(CENTER,CENTER)
-     ;
-
-  cp5.addButton("New")
-     .setBroadcast(false)
-     .setPosition(860,40)
-     .setSize(100,40)
-     .setBroadcast(true)
-     .getCaptionLabel().setFont(font1).align(CENTER,CENTER)
-     ;
-  */   
+  cp5.getController("New").show(); 
 }
 
 void state4_controls()
 {
   mychart_temp.show();
   cp5.getController("Save").show();
-  /*
-  mychart_temp = cp5.addChart("Temperature")
-                    .setPosition(120,150)
-                    .setSize(750,350)
-                    .setRange(-2,80)
-                    .setView(Chart.LINE)
-                    .setStrokeWeight(1.5)
-                   // .setColorCaptionLabel(color(40))
-                   // .getCaptionLabel().setFont(font1)
-                    ;
-
-   cp5.addButton("Save")
-     .setBroadcast(false)
-     .setPosition(900,300)
-     .setSize(100,40)
-     .setBroadcast(true)
-     .getCaptionLabel().setFont(font1).align(CENTER,CENTER)
-     ;                 
-
-  mychart_temp.addDataSet("temp");
-  mychart_temp.setData("temp",new float[150]);
-  */
+ 
   myport.write('t');
-
 }
 
 void state5_controls()
 {
   cp5.getController("Read_Skin").show();
-  /*
-  cp5.addButton("Read_Skin")
-     .setBroadcast(false)
-     .setPosition(450,250)
-     .setSize(150,50)
-     .setBroadcast(true)
-     .getCaptionLabel().setText("Read Skin Conductance").setFont(font1).align(CENTER,CENTER)
-     ;
-  */   
+ 
 }
 
 void state6_controls()
 {
   mychart_skin.show();
   cp5.getController("Save").show();
-  /*
-  mychart_skin = cp5.addChart("Skin_Conductance")
-                    .setPosition(120,150)
-                    .setSize(750,350)
-                    .setRange(-2,15)
-                    .setView(Chart.LINE)
-                    .setStrokeWeight(1.5)
-                   // .setColorCaptionLabel(color(40))
-                   // .getCaptionLabel().setFont(font1)
-                    ;
-
-                    
-
-  mychart_skin.addDataSet("skin");
-  mychart_skin.setData("skin",new float[150]);
-  */
+ 
   myport.write('s');
 }
 
@@ -361,7 +261,8 @@ public void Connect(int val)
 
 public void Create(int val)
 {
-  concat_path = file_path + (cp5.get(Textfield.class,"Input_Filename").getText()) + "_vital.txt";
+  patient_id = day() + "_K_" + (cp5.get(Textfield.class,"Input_Filename").getText()) + "_VT";
+  concat_path = file_path + patient_id + "/" + patient_id + "_temp.txt";
   output_file = createWriter(concat_path);
   println(concat_path);
   log_str = "File created at "+ concat_path + " Read Temperature";
@@ -385,6 +286,8 @@ public void Save()
           mychart_temp.hide();
           current_state = 5;
           log_str = save_data + " saved. Read Skin Conductance";
+          output_file.flush();
+          output_file.close();
     break;
 
     case 6:
@@ -392,7 +295,7 @@ public void Save()
           current_state = 7;
           log_str = save_data + " saved. Read Blood Oxygen Saturation";
           output_file.flush();
-            output_file.close();
+          output_file.close();
     break;
   }
   
@@ -409,6 +312,9 @@ public void Read_Skin()
 {
   log_str = "Reading Skin conductance...";
   cp5.getController("Read_Skin").hide();
+  concat_path = file_path + patient_id + "/" + patient_id + "_gsr.txt";
+  output_file = createWriter(concat_path);
+  println(concat_path);
   current_state = 6;
 }
 
