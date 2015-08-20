@@ -142,13 +142,13 @@ void draw()
             {
               instring = trim(instring);
               float[] indata = float(split(instring,','));
-              if(indata.length == 3)
+              if(indata.length == 4)
               {
              
               println(indata.length);
               println(instring);
-              mychart_skin.push("skin",indata[0]);
-              log_str = "Skin Conductance = " + str(indata[0])+" Resistance = " + str(indata[1])+ " Voltage = "+str(indata[2]);
+              mychart_skin.push("skin",indata[1]);
+              log_str = "Time = "+ str(indata[0]) + " Skin Conductance = " + str(indata[1])+" Resistance = " + str(indata[2])+ " Voltage = "+str(indata[3]);
               
               save_data = instring;
               if(save_gsr)
