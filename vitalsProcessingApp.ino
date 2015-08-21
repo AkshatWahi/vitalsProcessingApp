@@ -26,13 +26,13 @@ import controlP5.*;
 import processing.serial.*;
 import java.util.*;
 
-Serial myport;
+Serial myport,myprinterport;
 ControlP5 cp5;
 Chart mychart_temp,mychart_skin;
 String log_str="Select COM port ...",file_path="D:/Kumbh_data/",concat_path="", patient_id = "";
 String[] srl;
-int prev_state = 0, current_state = 1,droplist_no=0;
-String instring, save_data;
+int prev_state = 0, current_state = 1,droplist_no=0, g_bpm = 0;
+String instring, save_data, pr_data;
 char inbyte;
 boolean save_gsr = false;
 long current_time, collection_time = 10000;
@@ -195,7 +195,7 @@ void draw()
               log_str = "beats per minute = "+ str(indata[0]) + " SpO2% = " + str(indata[1]);
               
               save_data = instring;
-                           
+              g_bpm = int(indata[0]);             
               }
               instring = "";
             }
@@ -215,7 +215,7 @@ void draw()
               prev_state = current_state;
               state10_controls();
             }
-            float indata[2];
+            float[] indata = new float[2];
             instring = "";
 
             indata[0] = float(cp5.get(Textfield.class,"Input_Sys").getText());
@@ -304,6 +304,11 @@ void state10_controls()
   //myport.write()
 }
 
+void state11_controls()
+{
+  cp5.getController("Print").show();
+}
+
 public void dropdown(int n)
 {
   droplist_no = n;
@@ -320,6 +325,15 @@ public void Connect(int val)
   {
     println("Cannot connect to port");
     log_str = "Unable to connect. Check the connections and Restart application.";
+  }
+
+  try{
+    myprinterport = new Serial(this,Serial.list()[1],9600);
+  }
+  catch(Exception e)
+  {
+    println("Cannot connect to printer");
+    log_str = "Unable to connect to printer.";
   }
   cp5.getController("Connect").hide();
   cp5.getController("dropdown").hide();
@@ -403,6 +417,7 @@ public void Save()
            cp5.getController("Input_Dia").hide();
            cp5.getController("Save").hide();
            log_str = save_data + " saved. Print ";
+           pr_data = save_data;
            output_file.flush();
            output_file.close();
            current_state = 11;
@@ -425,6 +440,15 @@ public void Read_Skin()
   output_file = createWriter(concat_path);
   println(concat_path);
   current_state = 6;
+}
+
+public void Print()
+{
+  pr_data += "," + str(g_bpm)+ ","+"o";
+  myprinterport.write(pr_data);
+  //myprinterport.write('o');
+  myprinterport.write('\n');
+  println(pr_data);
 }
 
 public void Read_BP()
@@ -634,6 +658,15 @@ public void initiate_allcontrols()
      ;
   
   cp5.getController("Read_BP").hide();
-
+  
+  cp5.addButton("Print")
+     .setBroadcast(false)
+     .setPosition(450,250)
+     .setSize(150,50)
+     .setBroadcast(true)
+     .getCaptionLabel().setFont(font1).align(CENTER,CENTER)
+     ;
+  
+  cp5.getController("Print").hide();
 
 }
