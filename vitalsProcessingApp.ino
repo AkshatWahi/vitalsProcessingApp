@@ -45,7 +45,7 @@ void setup()
   noStroke();
   cp5 = new ControlP5(this);
   font1 = createFont("arial",13);
-  font2 = createFont("arial",20);
+  font2 = createFont("arial",35);
   
   srl = Serial.list();
   initiate_allcontrols();
@@ -70,6 +70,7 @@ void draw()
       log_str = str(collection_time/1000) + " seconds data saved. Read Blood Oxygen Saturation";
       output_file.flush();
       output_file.close();
+      myport.write('d');
     }
   }
   switch(current_state)
@@ -178,6 +179,26 @@ void draw()
               prev_state = current_state;
               state8_controls();
             }
+
+             if(instring != null)
+            {
+              instring = trim(instring);
+              float[] indata = float(split(instring,','));
+              if(indata.length == 2)
+              {
+             
+              println(indata.length);
+              println(instring);
+              cp5.getController("bpm").setValue(indata[0]);
+              cp5.getController("SpO2%").setValue(indata[1]);
+             
+              log_str = "beats per minute = "+ str(indata[0]) + " SpO2% = " + str(indata[1]);
+              
+              save_data = instring;
+                           
+              }
+              instring = "";
+            }
     break;
 
     case 9:
@@ -193,6 +214,22 @@ void draw()
             {
               prev_state = current_state;
               state10_controls();
+            }
+            float indata[2];
+            instring = "";
+
+            indata[0] = float(cp5.get(Textfield.class,"Input_Sys").getText());
+            indata[1] = float(cp5.get(Textfield.class,"Input_Dia").getText());
+            
+            save_data = str(indata[0]) +","+ str(indata[1]);
+            log_str = "Systolic Pressure = " + str(indata[0])+ "  Diastolic Pressure = " +str(indata[1]);          
+    break;
+
+    case 11:
+            if(prev_state != current_state)
+            {
+              prev_state = current_state;
+              state11_controls();
             }
     break;
   }
@@ -241,16 +278,31 @@ void state6_controls()
 }
 
 void state7_controls()
-{}
+{
+   cp5.getController("Read_Pulseox").show();
+}
 
 void state8_controls()
-{}
+{
+   cp5.getController("bpm").show();
+   cp5.getController("SpO2%").show();
+   cp5.getController("Save").show();
+
+   myport.write('p');
+}
 
 void state9_controls()
-{}
+{
+  cp5.getController("Read_BP").show();
+}
 
 void state10_controls()
-{}
+{
+  cp5.getController("Input_Sys").show();
+  cp5.getController("Input_Dia").show();
+  cp5.getController("Save").show();
+  //myport.write()
+}
 
 public void dropdown(int n)
 {
@@ -296,6 +348,16 @@ public void Read_temp(int val)
   current_state = 4;
 }
 
+public void Read_Pulseox(int val)
+{
+  log_str = "Reading BPM and SpO2%.";
+  cp5.getController("Read_Pulseox").hide();
+  concat_path = file_path + patient_id + "/" + patient_id + "_pox.txt";
+  output_file = createWriter(concat_path);
+  println(concat_path);
+  current_state = 8;
+}
+
 public void Save()
 {
   output_file.println(save_data);
@@ -324,6 +386,27 @@ public void Save()
           output_file.close();
           */
     break;
+
+    case 8:
+          cp5.getController("bpm").hide();
+          cp5.getController("SpO2%").hide();
+          cp5.getController("Save").hide();
+          log_str = save_data + " saved. Read Blood Pressure";
+          output_file.flush();
+          output_file.close();
+          current_state = 9;
+          myport.write('d');
+    break;
+
+    case 10:
+           cp5.getController("Input_Sys").hide();
+           cp5.getController("Input_Dia").hide();
+           cp5.getController("Save").hide();
+           log_str = save_data + " saved. Print ";
+           output_file.flush();
+           output_file.close();
+           current_state = 11;
+    break;
   }
   
   
@@ -342,6 +425,16 @@ public void Read_Skin()
   output_file = createWriter(concat_path);
   println(concat_path);
   current_state = 6;
+}
+
+public void Read_BP()
+{
+  log_str = "Reading Blood Pressure...";
+  cp5.getController("Read_BP").hide();
+  concat_path = file_path + patient_id + "/" + patient_id + "_bp.txt";
+  output_file = createWriter(concat_path);
+  println(concat_path);
+  current_state = 10;
 }
 
 void serialEvent(Serial p)
@@ -464,6 +557,83 @@ public void initiate_allcontrols()
   
   mychart_skin.addDataSet("skin");
   mychart_skin.setData("skin",new float[150]);
-  mychart_skin.hide();                  
+  mychart_skin.hide();           
+
+  cp5.addButton("Read_Pulseox")
+     .setBroadcast(false)
+     .setPosition(450,250)
+     .setSize(150,50)
+     .setBroadcast(true)
+     .getCaptionLabel().setText("Read Pulse OX").setFont(font1).align(CENTER,CENTER)
+     ;
+  
+  cp5.getController("Read_Pulseox").hide();
+
+  cp5.addSlider("bpm")
+     .setPosition(300,150)
+     .setSize(80,350) 
+     .setRange(0,150)
+     .setValue(0)
+     ;     
+  
+  cp5.getController("bpm").getValueLabel().setFont(font1);
+  cp5.getController("bpm").getCaptionLabel().setFont(font2);
+  cp5.getController("bpm").hide();
+
+  cp5.addSlider("SpO2%")
+     .setPosition(600,150)
+     .setSize(80,350) 
+     .setRange(0,100)
+     .setValue(0)
+     ;     
+  
+  cp5.getController("SpO2%").getValueLabel().setFont(font1);
+  cp5.getController("SpO2%").getCaptionLabel().setFont(font2);
+  cp5.getController("SpO2%").hide();            
+
+ // cp5.getController("BPM").getValueLabel().align(ControlP5.LEFT, ControlP5.BOTTOM_OUTSIDE).setPaddingX(0);
+ // cp5.getController("BPM").getCaptionLabel().align(ControlP5.RIGHT, ControlP5.BOTTOM_OUTSIDE).setPaddingX(0);
+
+  cp5.addTextfield("Input_Sys")
+     .setBroadcast(false)
+     .setPosition(250,300)
+     .setSize(150,60)
+     .setFont(font2)
+     .setFocus(true)
+     .setColor(color(200,0,0))
+     .setText("")
+     .setAutoClear(false)
+     .setBroadcast(true)
+     .getCaptionLabel().setText("Systolic").setFont(font1)
+     ;
+
+  cp5.getController("Input_Sys").hide();   
+
+
+  cp5.addTextfield("Input_Dia")
+     .setBroadcast(false)
+     .setPosition(550,300)
+     .setSize(150,60)
+     .setFont(font2)
+     .setFocus(true)
+     .setColor(color(200,0,0))
+     .setText("")
+     .setAutoClear(false)
+     .setBroadcast(true)
+     .getCaptionLabel().setText("Diastolic").setFont(font1)
+     ;
+
+  cp5.getController("Input_Dia").hide();   
+
+  cp5.addButton("Read_BP")
+     .setBroadcast(false)
+     .setPosition(450,250)
+     .setSize(150,50)
+     .setBroadcast(true)
+     .getCaptionLabel().setText("Read BP").setFont(font1).align(CENTER,CENTER)
+     ;
+  
+  cp5.getController("Read_BP").hide();
+
 
 }
