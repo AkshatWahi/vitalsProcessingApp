@@ -34,7 +34,7 @@ String[] srl;
 int prev_state = 0, current_state = 1,droplist_no=0, g_bpm = 0;
 String instring, save_data, pr_data;
 char inbyte;
-boolean save_gsr = false;
+boolean save_gsr = false,invalid_data = true;
 long current_time, collection_time = 10000;
 PFont font1,font2;
 PrintWriter output_file;
@@ -222,7 +222,17 @@ void draw()
             indata[1] = float(cp5.get(Textfield.class,"Input_Dia").getText());
             
             save_data = str(indata[0]) +","+ str(indata[1]);
-            log_str = "Systolic Pressure = " + str(indata[0])+ "  Diastolic Pressure = " +str(indata[1]);          
+            log_str = "Systolic Pressure = " + str(indata[0])+ "  Diastolic Pressure = " +str(indata[1]);
+            if(indata[0] >33 && indata[0] < 210 && indata[1] >33 && indata[1] <210)
+            {
+              invalid_data = false;
+              log_str += " Valid data";
+            }          
+            else
+            {
+              invalid_data = true;
+              log_str += " Invalid data. Enter valid values.";
+            }
     break;
 
     case 11:
@@ -376,10 +386,11 @@ public void Read_Pulseox(int val)
 
 public void Save()
 {
-  output_file.println(save_data);
+ // output_file.println(save_data);
   switch(current_state)
   {
     case 4:
+          output_file.println(save_data);
           mychart_temp.hide();
           current_state = 5;
           log_str = save_data + " saved. Read Skin Conductance";
@@ -390,6 +401,7 @@ public void Save()
     break;
 
     case 6:
+          output_file.println(save_data);
           current_time = millis();
           save_gsr = true;
           cp5.getController("Save").hide();
@@ -404,6 +416,7 @@ public void Save()
     break;
 
     case 8:
+          output_file.println(save_data);
           cp5.getController("bpm").hide();
           cp5.getController("SpO2%").hide();
           cp5.getController("Save").hide();
@@ -415,6 +428,9 @@ public void Save()
     break;
 
     case 10:
+           if(!invalid_data)
+           {
+            output_file.println(save_data);
            cp5.getController("Input_Sys").hide();
            cp5.getController("Input_Dia").hide();
            cp5.getController("Save").hide();
@@ -423,6 +439,12 @@ public void Save()
            output_file.flush();
            output_file.close();
            current_state = 11;
+           }
+           else
+           {
+            log_str = "Not a valid data. Enter valid data";
+           }
+
     break;
   }
   
