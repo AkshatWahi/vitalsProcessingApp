@@ -252,7 +252,7 @@ void state2_controls()
 void state3_controls()
 {
   cp5.getController("Read_temp").show();
-  cp5.getController("New").show(); 
+ // cp5.getController("New").show(); 
 }
 
 void state4_controls()
@@ -307,6 +307,7 @@ void state10_controls()
 void state11_controls()
 {
   cp5.getController("Print").show();
+  cp5.getController("New").show();
 }
 
 public void dropdown(int n)
@@ -346,7 +347,8 @@ public void Connect(int val)
 
 public void Create(int val)
 {
-  patient_id = day() + "_K_" + (cp5.get(Textfield.class,"Input_Filename").getText()) + "_VT";
+ // patient_id = day() + "_K_" + (cp5.get(Textfield.class,"Input_Filename").getText()) + "_VT";
+  patient_id = (cp5.get(Textfield.class,"Input_Filename").getText()) + "_VT";
   concat_path = file_path + patient_id + "/" + patient_id + "_temp.txt";
   output_file = createWriter(concat_path);
   println(concat_path);
@@ -451,6 +453,15 @@ public void Print()
   println(pr_data);
 }
 
+public void New()
+{
+  log_str = "Enter New Patient ID";
+  current_state = 2;
+  patient_id = "";
+  cp5.getController("New").hide();
+  cp5.getController("Print").hide();
+}
+
 public void Read_BP()
 {
   log_str = "Reading Blood Pressure...";
@@ -538,7 +549,7 @@ public void initiate_allcontrols()
   mychart_temp = cp5.addChart("Temperature")
                     .setPosition(120,150)
                     .setSize(750,350)
-                    .setRange(-2,80)
+                    .setRange(-2,50)
                     .setView(Chart.LINE)
                     .setStrokeWeight(1.5)
                    // .setColorCaptionLabel(color(40))
@@ -546,7 +557,7 @@ public void initiate_allcontrols()
                     ;
 
   mychart_temp.addDataSet("temp");
-  mychart_temp.setData("temp",new float[150]);
+  mychart_temp.setData("temp",new float[100]);
   mychart_temp.hide();
 
   cp5.addButton("Save")
